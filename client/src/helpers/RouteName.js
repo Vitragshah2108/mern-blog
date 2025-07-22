@@ -1,7 +1,10 @@
 export const RouteIndex = '/'
 export const RouteSignIn = '/sign-in'
 export const RouteSignUp = '/sign-up'
+export const RouteForgotPassword = '/forgot-password'
+export const RouteResetPassword = '/reset-password'
 export const RouteProfile = '/profile'
+export const RouteAdminDashboard = '/admin/dashboard'
 export const RouteCategoryDetails = '/categories'
 export const RouteAddCategory = '/category/add'
 export const RouteEditCategory = (category_id) => {

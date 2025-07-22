@@ -10,6 +10,8 @@ import moment from 'moment'
 import { Link } from 'react-router-dom'
 import { RouteBlogDetails } from '@/helpers/RouteName'
 const BlogCard = ({ props }) => {
+    // Check if author exists, otherwise use a default value
+    const author = props.author || { name: 'Deleted User', avatar: usericon, role: 'user' };
  
     return (
         <Link to={RouteBlogDetails(props.category.slug, props.slug)}>
@@ -18,11 +20,11 @@ const BlogCard = ({ props }) => {
                     <div className='flex items-center justify-between'>
                         <div className='flex justify-between items-center gap-2'>
                             <Avatar>
-                                <AvatarImage src={props.author.avatar || usericon} />
+                                <AvatarImage src={author.avatar || usericon} />
                             </Avatar>
-                            <span>{props.author.name}</span>
+                            <span>{author.name}</span>
                         </div>
-                        {props.author.role === 'admin' &&
+                        {author.role === 'admin' &&
                             <Badge variant="outline" className="bg-violet-500">Admin</Badge>
                         }
                     </div>

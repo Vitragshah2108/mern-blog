@@ -4,6 +4,7 @@ import CommentList from '@/components/CommentList'
 import LikeCount from '@/components/LikeCount'
 import Loading from '@/components/Loading'
 import RelatedBlog from '@/components/RelatedBlog'
+import CodeCompiler from '@/components/CodeCompiler'
 import { Avatar } from '@/components/ui/avatar'
 import { getEvn } from '@/helpers/getEnv'
 import { useFetch } from '@/hooks/useFetch'
@@ -50,6 +51,11 @@ const SingleBlogDetails = () => {
                         <div dangerouslySetInnerHTML={{ __html: decode(data.blog.blogContent) || '' }}>
 
                         </div>
+
+                        {/* Show CodeCompiler only for programming category */}
+                        {data.blog.category.name.toLowerCase() === 'programming' && (
+                            <CodeCompiler />
+                        )}
 
                         <div className='border-t mt-5 pt-5'>
                             <Comment props={{ blogid: data.blog._id }} />

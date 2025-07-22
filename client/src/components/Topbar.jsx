@@ -26,6 +26,7 @@ import { getEvn } from '@/helpers/getEnv';
 import { IoMdSearch } from "react-icons/io";
 import { AiOutlineMenu } from "react-icons/ai";
 import { useSidebar } from './ui/sidebar';
+import NotificationDropdown from './NotificationDropdown';
 
 
 const Topbar = () => {
@@ -59,13 +60,13 @@ const Topbar = () => {
     }
 
     return (
-        <div className='flex justify-between items-center h-16 fixed w-full z-20 bg-white px-5 border-b'>
+        <div className='flex justify-between items-center h-[62px] fixed w-full z-20 bg-white px-5 border-b'>
             <div className='flex justify-center items-center gap-2'>
                 <button onClick={toggleSidebar} className='md:hidden' type='button'>
                     <AiOutlineMenu />
                 </button>
                 <Link to={RouteIndex}>
-                    <img src={logo} className='md:w-auto w-48' />
+                    <img src={logo} className='h-[62px] w-[113px] object-contain' />
                 </Link>
             </div>
             <div className='w-[500px]'>
@@ -87,41 +88,45 @@ const Topbar = () => {
                         </Link>
                     </Button>
                     :
-                    <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Avatar>
-                                <AvatarImage src={user.user.avatar || usericon} />
-                            </Avatar>
+                    <>
+                        {/* Notification Bell Icon */}
+                        <NotificationDropdown />
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Avatar>
+                                    <AvatarImage src={user.user.avatar || usericon} />
+                                </Avatar>
 
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>
-                                <p>{user.user.name}</p>
-                                <p className='text-sm'>{user.user.email}</p>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild className="cursor-pointer">
-                                <Link to={RouteProfile}>
-                                    <FaRegUser />
-                                    Profile
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer">
-                                <Link to={RouteBlogAdd}>
-                                    <FaPlus />
-                                    Create Blog
-                                </Link>
-                            </DropdownMenuItem>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>
+                                    <p>{user.user.name}</p>
+                                    <p className='text-sm'>{user.user.email}</p>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link to={RouteProfile}>
+                                        <FaRegUser />
+                                        Profile
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link to={RouteBlogAdd}>
+                                        <FaPlus />
+                                        Create Blog
+                                    </Link>
+                                </DropdownMenuItem>
 
-                            <DropdownMenuSeparator />
+                                <DropdownMenuSeparator />
 
-                            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                                <IoLogOutOutline color='red' />
-                                Logout
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                                    <IoLogOutOutline color='red' />
+                                    Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </>
                 }
 
 

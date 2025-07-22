@@ -9,16 +9,25 @@ export const addBlog = async (req, res, next) => {
         let featuredImage = ''
         if (req.file) {
             // Upload an image
-            const uploadResult = await cloudinary.uploader
-                .upload(
+            try {
+                const uploadResult = await cloudinary.uploader.upload(
                     req.file.path,
-                    { folder: 'yt-mern-blog', resource_type: 'auto' }
-                )
-                .catch((error) => {
-                    next(handleError(500, error.message))
-                });
-
-            featuredImage = uploadResult.secure_url
+                    { 
+                        folder: 'MERN-BLOG', 
+                        resource_type: 'auto'
+                    }
+                );
+                featuredImage = uploadResult.secure_url;
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                
+                // Check for API secret mismatch
+                if (error.message && error.message.includes('Invalid Signature')) {
+                    return next(handleError(500, 'Cloudinary API secret mismatch. Please check your .env file.'));
+                }
+                
+                return next(handleError(500, `Image upload failed: ${error.message}`));
+            }
         }
         
         const blog = new Blog({
@@ -71,16 +80,25 @@ export const updateBlog = async (req, res, next) => {
 
         if (req.file) {
             // Upload an image
-            const uploadResult = await cloudinary.uploader
-                .upload(
+            try {
+                const uploadResult = await cloudinary.uploader.upload(
                     req.file.path,
-                    { folder: 'yt-mern-blog', resource_type: 'auto' }
-                )
-                .catch((error) => {
-                    next(handleError(500, error.message))
-                });
-
-            featuredImage = uploadResult.secure_url
+                    { 
+                        folder: 'MERN-BLOG', 
+                        resource_type: 'auto'
+                    }
+                );
+                featuredImage = uploadResult.secure_url;
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                
+                // Check for API secret mismatch
+                if (error.message && error.message.includes('Invalid Signature')) {
+                    return next(handleError(500, 'Cloudinary API secret mismatch. Please check your .env file.'));
+                }
+                
+                return next(handleError(500, `Image upload failed: ${error.message}`));
+            }
         }
 
         blog.featuredImage = featuredImage
@@ -110,7 +128,7 @@ export const deleteBlog = async (req, res, next) => {
     }
 }
 export const showAllBlog = async (req, res, next) => {
-    try {
+    try { 
         const user = req.user
         let blog;
         if (user.role === 'admin') {
@@ -162,13 +180,14 @@ export const getBlogByCategory = async (req, res, next) => {
 
         const categoryData = await Category.findOne({ slug: category })
         if (!categoryData) {
-            return next(404, 'Category data not found.')
+            // return next(404, 'Category data not found.')
+            return next(handleError(404, 'Category data not found.'));
         }
         const categoryId = categoryData._id
         const blog = await Blog.find({ category: categoryId }).populate('author', 'name avatar role').populate('category', 'name slug').lean().exec()
         res.status(200).json({
             blog,
-            categoryData
+            categoryData    
         })
     } catch (error) {
         next(handleError(500, error.message))

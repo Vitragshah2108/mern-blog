@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from './components/ui/button'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './Layout/Layout'
-import { RouteAddCategory, RouteBlog, RouteBlogAdd, RouteBlogByCategory, RouteBlogDetails, RouteBlogEdit, RouteCategoryDetails, RouteCommentDetails, RouteEditCategory, RouteIndex, RouteProfile, RouteSearch, RouteSignIn, RouteSignUp, RouteUser } from './helpers/RouteName'
+import { RouteAddCategory, RouteAdminDashboard, RouteBlog, RouteBlogAdd, RouteBlogByCategory, RouteBlogDetails, RouteBlogEdit, RouteCategoryDetails, RouteCommentDetails, RouteEditCategory, RouteForgotPassword, RouteIndex, RouteProfile, RouteSearch, RouteSignIn, RouteSignUp, RouteUser } from './helpers/RouteName'
 import Index from './pages/Index'
 import SignUp from './pages/SignUp'
 import SignIn from './pages/SignIn'
@@ -20,6 +20,9 @@ import Comments from './pages/Comments'
 import User from './pages/User'
 import AuthRouteProtechtion from './components/AuthRouteProtechtion'
 import OnlyAdminAllowed from './components/OnlyAdminAllowed'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import Dashboard from './pages/Admin/Dashboard'
 
 const App = () => {
   return (
@@ -44,6 +47,7 @@ const App = () => {
 
 
           <Route element={<OnlyAdminAllowed />}>
+            <Route path={RouteAdminDashboard} element={<Dashboard />} />
             <Route path={RouteAddCategory} element={<AddCategory />} />
             <Route path={RouteCategoryDetails} element={<CategoryDetails />} />
             <Route path={RouteEditCategory()} element={<EditCategory />} />
@@ -54,6 +58,8 @@ const App = () => {
 
         <Route path={RouteSignIn} element={<SignIn />} />
         <Route path={RouteSignUp} element={<SignUp />} />
+        <Route path={RouteForgotPassword} element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   )

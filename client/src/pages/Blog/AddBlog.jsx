@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { z } from 'zod'
@@ -22,6 +22,8 @@ import Editor from '@/components/Editor'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { RouteBlog } from '@/helpers/RouteName'
+import { decode } from 'entities'
+import { debounce } from 'lodash'
 
 const AddBlog = () => {
     const navigate = useNavigate()
@@ -31,8 +33,11 @@ const AddBlog = () => {
         credentials: 'include'
     })
 
-    const [filePreview, setPreview] = useState()
-    const [file, setFile] = useState()
+    const [filePreview, setPreview] = useState('')
+    const [file, setFile] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
+    const [hasDraft, setHasDraft] = useState(false)
+    const [saveError, setSaveError] = useState(null)
 
     const formSchema = z.object({
         category: z.string().min(3, 'Category must be at least 3 character long.'),
@@ -51,11 +56,47 @@ const AddBlog = () => {
         },
     })
 
+    // Fetch draft on component mount
+    useEffect(() => {
+        const fetchDraft = async () => {
+            try {
+                const response = await fetch(`${getEvn('VITE_API_BASE_URL')}/drafts`, {
+                    method: 'get',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch draft');
+                }
+                
+                const data = await response.json();
+                
+                if (data.draft) {
+                    // Prefill form with draft data
+                    form.setValue('category', data.draft.category || '');
+                    form.setValue('title', data.draft.title || '');
+                    form.setValue('slug', data.draft.slug || '');
+                    form.setValue('blogContent', data.draft.blogContent ? decode(data.draft.blogContent) : '');
+                    
+                    if (data.draft.featuredImage) {
+                        setPreview(data.draft.featuredImage);
+                    }
+                    
+                    setHasDraft(true);
+                }
+            } catch (error) {
+                console.error('Error fetching draft:', error);
+                setSaveError('Failed to load draft. Please try again.');
+            }
+        };
+        
+        fetchDraft();
+    }, []);
+
     const handleEditorData = (event, editor) => {
         const data = editor.getData()
         form.setValue('blogContent', data)
     }
-
 
     const blogTitle = form.watch('title')
 
@@ -66,12 +107,68 @@ const AddBlog = () => {
         }
     }, [blogTitle])
 
-    async function onSubmit(values) {
+    // Auto-save draft when form values change
+    const autoSaveDraft = useCallback(
+        debounce(async (values) => {
+            if (!user.isLoggedIn) return;
+            
+            try {
+                setIsLoading(true);
+                setSaveError(null);
+                
+                const formData = new FormData();
+                if (file) {
+                    formData.append('file', file);
+                }
+                
+                // Only include fields that have values
+                const draftData = {
+                    category: values.category || '',
+                    title: values.title || '',
+                    slug: values.slug || '',
+                    blogContent: values.blogContent || '',
+                };
+                
+                formData.append('data', JSON.stringify(draftData));
+                
+                const response = await fetch(`${getEvn('VITE_API_BASE_URL')}/drafts`, {
+                    method: 'post',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save draft');
+                }
+                
+                setHasDraft(true);
+            } catch (error) {
+                console.error('Error saving draft:', error);
+                setSaveError('Failed to save draft. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
+        }, 2000), // 2 second debounce
+        [file, user.isLoggedIn]
+    );
 
+    // Watch form values for changes and trigger auto-save
+    useEffect(() => {
+        const subscription = form.watch((values) => {
+            if (values.title || values.category || values.blogContent) {
+                autoSaveDraft(values);
+            }
+        });
+        
+        return () => subscription.unsubscribe();
+    }, [autoSaveDraft]);
+
+    async function onSubmit(values) {
         try {
             const newValues = { ...values, author: user.user._id }
             if (!file) {
                 showToast('error', 'Feature image required.')
+                return;
             }
 
             const formData = new FormData()
@@ -87,9 +184,20 @@ const AddBlog = () => {
             if (!response.ok) {
                 return showToast('error', data.message)
             }
+            
+            // Delete the draft after successful blog submission
+            try {
+                await fetch(`${getEvn('VITE_API_BASE_URL')}/drafts`, {
+                    method: 'delete',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Error deleting draft:', error);
+            }
+            
             form.reset()
-            setFile()
-            setPreview()
+            setFile(null)
+            setPreview('')
             navigate(RouteBlog)
             showToast('success', data.message)
         } catch (error) {
@@ -98,17 +206,29 @@ const AddBlog = () => {
     }
 
     const handleFileSelection = (files) => {
-        const file = files[0]
-        const preview = URL.createObjectURL(file)
-        setFile(file)
-        setPreview(preview)
+        if (files && files.length > 0) {
+            const file = files[0]
+            const preview = URL.createObjectURL(file)
+            setFile(file)
+            setPreview(preview)
+        }
     }
 
     return (
         <div>
             <Card className="pt-5">
                 <CardContent>
-                    <h1 className='text-2xl font-bold mb-4'>Edit Blog</h1>
+                    <h1 className='text-2xl font-bold mb-4'>Add Blog</h1>
+                    {hasDraft && (
+                        <div className="mb-4 p-2 bg-blue-50 text-blue-700 rounded">
+                            <p>You have a draft. Your changes are being saved automatically.</p>
+                        </div>
+                    )}
+                    {saveError && (
+                        <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">
+                            <p>{saveError}</p>
+                        </div>
+                    )}
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}  >
                             <div className='mb-3'>
@@ -116,24 +236,23 @@ const AddBlog = () => {
                                     control={form.control}
                                     name="category"
                                     render={({ field }) => (
-
                                         <FormItem>
-
                                             <FormLabel>Category</FormLabel>
                                             <FormControl>
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <SelectTrigger  >
+                                                    <SelectTrigger>
                                                         <SelectValue placeholder="Select" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         {categoryData && categoryData.category.length > 0 &&
-                                                            categoryData.category.map(category => <SelectItem key={category._id} value={category._id}>{category.name}</SelectItem>)
+                                                            categoryData.category.map(category => (
+                                                                <SelectItem key={category._id} value={category._id}>
+                                                                    {category.name}
+                                                                </SelectItem>
+                                                            ))
                                                         }
-
-
                                                     </SelectContent>
                                                 </Select>
-
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -177,14 +296,17 @@ const AddBlog = () => {
                                         <div {...getRootProps()}>
                                             <input {...getInputProps()} />
                                             <div className='flex justify-center items-center w-36 h-28 border-2 border-dashed rounded'>
-                                                <img src={filePreview} />
+                                                {filePreview ? (
+                                                    <img src={filePreview} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                                ) : (
+                                                    <span className="text-gray-500">Drop image here</span>
+                                                )}
                                             </div>
                                         </div>
                                     )}
                                 </Dropzone>
                             </div>
                             <div className='mb-3'>
-
                                 <FormField
                                     control={form.control}
                                     name="blogContent"
@@ -192,24 +314,20 @@ const AddBlog = () => {
                                         <FormItem>
                                             <FormLabel>Blog Content</FormLabel>
                                             <FormControl>
-                                                <Editor props={{ initialData: '', onChange: handleEditorData }} />
+                                                <Editor props={{ initialData: field.value, onChange: handleEditorData }} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-
                             </div>
-
-
-
-                            <Button type="submit" className="w-full">Submit</Button>
+                            <Button type="submit" className="w-full" disabled={isLoading}>
+                                {isLoading ? 'Saving...' : 'Submit'}
+                            </Button>
                         </form>
                     </Form>
-
                 </CardContent>
             </Card>
-
         </div>
     )
 }

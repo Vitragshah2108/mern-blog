@@ -1,5 +1,8 @@
 import { handleError } from "../helpers/handleError.js"
 import Comment from "../models/comment.model.js"
+import { createNotification } from "./Notification.controller.js"
+import Blog from "../models/blog.model.js"
+
 export const addcomment = async (req, res, next) => {
     try {
         const { user, blogid, comment } = req.body
@@ -10,6 +13,20 @@ export const addcomment = async (req, res, next) => {
         })
 
         await newComment.save()
+        
+        // Create notification for blog owner
+        const blog = await Blog.findById(blogid).populate('author', '_id name');
+        if (blog && blog.author._id.toString() !== user) {
+            await createNotification(
+                blog.author._id,
+                'comment',
+                'Someone commented on your post',
+                user,
+                blogid,
+                newComment._id
+            );
+        }
+        
         res.status(200).json({
             success: true,
             message: 'Comment submited.',

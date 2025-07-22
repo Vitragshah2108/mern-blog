@@ -9,6 +9,9 @@ import CategoryRoute from './routes/Category.route.js'
 import BlogRoute from './routes/Blog.route.js'
 import CommentRouote from './routes/Comment.route.js'
 import BlogLikeRoute from './routes/Bloglike.route.js'
+import notificationRoutes from './routes/notification.routes.js'
+import DraftRoute from './routes/Draft.route.js'
+import AdminRoute from './routes/Admin.route.js'
 
 dotenv.config()
 
@@ -31,6 +34,9 @@ app.use('/api/category', CategoryRoute)
 app.use('/api/blog', BlogRoute)
 app.use('/api/comment', CommentRouote)
 app.use('/api/blog-like', BlogLikeRoute)
+app.use('/api/notifications', notificationRoutes)
+app.use('/api/drafts', DraftRoute)
+app.use('/api/admin', AdminRoute)
 
 
 

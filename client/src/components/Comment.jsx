@@ -29,33 +29,43 @@ const Comment = ({ props }) => {
 
     async function onSubmit(values) {
         try {
-            const newValues = { ...values, blogid: props.blogid, user: user.user._id }
+            const newValues = { 
+                user: user.user._id,
+                blogid: props.blogid,
+                comment: values.comment
+            }
+            
             const response = await fetch(`${getEvn('VITE_API_BASE_URL')}/comment/add`, {
                 method: 'post',
                 credentials: 'include',
                 headers: { 'Content-type': 'application/json' },
                 body: JSON.stringify(newValues)
             })
+            
             const data = await response.json()
+            
             if (!response.ok) {
-                return showToast('error', data.message)
+                showToast('error', data.message || 'Failed to add comment')
+                return
             }
+            
             setNewComment(data.comment)
             form.reset()
-            showToast('success', data.message)
+            showToast('success', data.message || 'Comment added successfully')
         } catch (error) {
-            showToast('error', error.message)
+            showToast('error', error.message || 'An error occurred while adding the comment')
         }
     }
 
     return (
         <div>
-            <h4 className='flex items-center gap-2 text-2xl font-bold'> <FaComments className='text-violet-500' /> Comment</h4>
+            <h4 className='flex items-center gap-2 text-2xl font-bold'> 
+                <FaComments className='text-violet-500' /> Comment
+            </h4>
 
-            {user && user.isLoggedIn
-                ?
+            {user && user.isLoggedIn ? (
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)}  >
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
                         <div className='mb-3'>
                             <FormField
                                 control={form.control}
@@ -72,19 +82,18 @@ const Comment = ({ props }) => {
                             />
                         </div>
 
-                        <Button type="submit" >Submit</Button>
+                        <Button type="submit">Submit</Button>
                     </form>
                 </Form>
-                :
+            ) : (
                 <Button asChild>
-                    <Link to={RouteSignIn}>Sign In </Link>
+                    <Link to={RouteSignIn}>Sign In</Link>
                 </Button>
-            }
+            )}
 
             <div className='mt-5'>
                 <CommentList props={{ blogid: props.blogid, newComment }} />
             </div>
-
         </div>
     )
 }

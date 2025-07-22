@@ -16,7 +16,8 @@ import { GrBlog } from "react-icons/gr";
 import { FaRegComments } from "react-icons/fa6";
 import { LuUsers } from "react-icons/lu";
 import { GoDot } from "react-icons/go";
-import { RouteBlog, RouteBlogByCategory, RouteCategoryDetails, RouteCommentDetails, RouteIndex, RouteUser } from "@/helpers/RouteName";
+import { MdDashboard } from "react-icons/md";
+import { RouteBlog, RouteBlogByCategory, RouteCategoryDetails, RouteCommentDetails, RouteIndex, RouteUser, RouteAdminDashboard } from "@/helpers/RouteName";
 import { useFetch } from "@/hooks/useFetch";
 import { getEvn } from "@/helpers/getEnv";
 import { useSelector } from "react-redux";
@@ -31,7 +32,7 @@ const AppSidebar = () => {
     return (
         <Sidebar>
             <SidebarHeader className="bg-white">
-                <img src={logo} width={120} />
+                {/* Logo removed to prevent duplication */}
             </SidebarHeader>
             <SidebarContent className="bg-white">
                 <SidebarGroup>
@@ -65,11 +66,16 @@ const AppSidebar = () => {
                             ? <>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton>
+                                        <MdDashboard />
+                                        <Link to={RouteAdminDashboard}>Dashboard</Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton>
                                         <BiCategoryAlt />
                                         <Link to={RouteCategoryDetails}>Categories</Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-
                                 <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <LuUsers />
