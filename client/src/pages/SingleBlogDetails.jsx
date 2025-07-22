@@ -46,9 +46,11 @@ const SingleBlogDetails = () => {
                             </div>
                         </div>
                         <div className='my-5'>
-                            <img src={data.blog.featuredImage} className='rounded' />
+                            <div className='blog-image-container'>
+                                <img src={data.blog.featuredImage} className='rounded blog-image' />
+                            </div>
                         </div>
-                        <div dangerouslySetInnerHTML={{ __html: decode(data.blog.blogContent) || '' }}>
+                        <div className='single-blog-content' dangerouslySetInnerHTML={{ __html: decode(data.blog.blogContent) || '' }}>
 
                         </div>
 

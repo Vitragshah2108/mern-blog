@@ -30,7 +30,9 @@ const BlogCard = ({ props }) => {
                     </div>
 
                     <div className='my-2'>
-                        <img src={props.featuredImage} className='rounded' />
+                        <div className='blog-image-container'>
+                            <img src={props.featuredImage} className='rounded blog-image' />
+                        </div>
                     </div>
                     <div>
                         <p className='flex items-center gap-2 mb-2'>

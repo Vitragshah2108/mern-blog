@@ -720,7 +720,7 @@ int main() {
                     position: relative;
                     height: 16rem;
                     border-radius: 0.375rem;
-                    overflow: hidden;
+                    overflow: auto; /* Make the wrapper the only scrollable container */
                 }
                 
                 /* Code Editor Container */
@@ -728,8 +728,8 @@ int main() {
                     position: relative;
                     height: 100%;
                     width: 100%;
-                    overflow: auto;
                     display: flex;
+                    /* Remove overflow: auto here */
                 }
                 
                 /* Line Numbers */
@@ -740,6 +740,7 @@ int main() {
                     text-align: right;
                     user-select: none;
                     border-right: 1px solid rgba(128, 128, 128, 0.2);
+                    flex-shrink: 0;
                 }
                 
                 .line-number {
@@ -772,7 +773,7 @@ int main() {
                     font-size: 14px;
                     line-height: 1.5;
                     resize: none;
-                    overflow: auto;
+                    overflow: hidden; /* Remove scroll from textarea */
                     z-index: 1;
                     opacity: 0.5;
                     background: transparent;
@@ -793,7 +794,7 @@ int main() {
                     font-family: 'Consolas', 'Courier New', monospace;
                     font-size: 14px;
                     line-height: 1.5;
-                    overflow: auto;
+                    overflow: hidden; /* Remove scroll from highlight */
                     z-index: 0;
                     pointer-events: none;
                     font-variant-ligatures: none;
@@ -957,7 +958,7 @@ int main() {
                 .theme-solarized-dark .token.string { color: #2AA198; }
                 .theme-solarized-dark .token.function { color: #B58900; }
                 .theme-solarized-dark .token.number { color: #D33682; }
-                .theme-solarized-dark .token.operator { color: #839496; }
+                .theme-solarized-dark .token.operator { color: #CCCCCC; }
                 .theme-solarized-dark .token.punctuation { color: #839496; }
                 
                 .theme-nord .token.comment { color: #616E88; }
